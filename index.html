@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Prospec — Gerador de Leads</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f7fa; --surface:#ffffff; --border:#e5e9f0; --text:#0f172a; --muted:#64748b;
+  --primary:#1d4ed8; --primary-hover:#1e40af; --primary-soft:#eff6ff; --primary-border:#bfdbfe;
+  --green:#047857; --green-soft:#ecfdf5; --green-border:#a7f3d0;
+  --amber:#b45309; --amber-soft:#fffbeb; --amber-border:#fde68a;
+  --red:#b91c1c; --red-soft:#fef2f2; --red-border:#fecaca;
+  --radius:10px; --shadow:0 1px 2px rgba(15,23,42,.06),0 1px 3px rgba(15,23,42,.08);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline}
+button{font:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit}
+
+/* ---------- layout ---------- */
+.topbar{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--border)}
+.topbar-in{max-width:1180px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand-mark{width:32px;height:32px;border-radius:8px;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:700;font-size:16px;flex:none}
+.brand-name{font-weight:700;font-size:15px;letter-spacing:-.2px}
+.brand-sub{font-size:12px;color:var(--muted)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:5px 10px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:99px;flex:none}
+.dot.ok{background:#10b981}.dot.warn{background:#f59e0b}
+
+.wrap{max-width:1180px;margin:0 auto;padding:22px 20px 40px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-pad{padding:18px 20px}
+.card-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:14px}
+
+/* ---------- form ---------- */
+.grid{display:grid;gap:14px}
+.grid-busca{grid-template-columns:minmax(200px,1fr) minmax(200px,1.3fr) 130px auto;align-items:end}
+.chips-row{grid-column:1/-1}
+.memory-line{display:flex;gap:14px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.link-btn{background:none;border:none;color:var(--muted);font-size:12px;text-decoration:underline;padding:0;cursor:pointer}
+.link-btn:hover{color:var(--text)}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.input{width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);outline:none;transition:border-color .15s,box-shadow .15s}
+.input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(29,78,216,.12)}
+textarea.input{height:auto;padding:10px 12px;resize:vertical;min-height:88px;line-height:1.5}
+select.input{cursor:pointer}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--border);border-radius:99px;background:var(--surface);font-size:13px;font-weight:500;color:var(--text);transition:all .15s}
+.chip:hover{border-color:var(--primary-border);background:var(--primary-soft)}
+.chip[aria-pressed="true"]{border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}
+.chip[aria-pressed="true"] svg{display:inline-block}
+.chip svg{display:none;width:13px;height:13px}
+
+.custom-row{display:flex;gap:8px;margin-top:10px}
+.custom-row .input{flex:1}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-weight:600;font-size:13px;white-space:nowrap;transition:all .15s}
+.btn:hover{background:#f8fafc}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn-primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--primary-hover)}
+.btn-green{background:var(--green);border-color:var(--green);color:#fff}
+.btn-green:hover{background:#065f46}
+.btn-sm{height:32px;padding:0 10px;font-size:12px;border-radius:7px}
+.btn-icon{width:32px;height:32px;padding:0;border-radius:7px;border:1px solid var(--border);background:var(--surface);display:inline-grid;place-items:center;color:var(--muted)}
+.btn-icon:hover{color:var(--text);background:#f8fafc}
+
+/* ---------- progress ---------- */
+.progress-wrap{margin-top:16px}
+.bar{height:6px;border-radius:99px;background:#eef2f7;overflow:hidden}
+.bar-fill{height:100%;width:0;background:var(--primary);border-radius:99px;transition:width .3s}
+.log{margin-top:10px;background:#0f172a;color:#94a3b8;font-family:var(--mono);font-size:11.5px;border-radius:8px;padding:10px 12px;max-height:96px;overflow-y:auto;white-space:pre-wrap}
+.log b{color:#e2e8f0}
+.log .err{color:#fca5a5}
+
+/* ---------- kpis ---------- */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:18px 0}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+.kpi-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.kpi-value{font-size:24px;font-weight:700;letter-spacing:-.5px;margin-top:2px}
+.kpi-sub{font-size:11px;color:var(--muted)}
+
+/* ---------- filters ---------- */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.toolbar .search{position:relative;flex:1;min-width:200px}
+.toolbar .search .input{padding-left:34px}
+.toolbar .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.toggle{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--text);user-select:none;cursor:pointer;white-space:nowrap}
+.toggle input{width:15px;height:15px;accent-color:var(--primary)}
+.spacer{flex:1}
+.count{font-size:12px;color:var(--muted);white-space:nowrap}
+
+/* ---------- table ---------- */
+.table-wrap{overflow-x:auto;border-radius:var(--radius)}
+table{width:100%;border-collapse:collapse;min-width:940px}
+th{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;padding:11px 12px;border-bottom:1px solid var(--border);background:#fafbfd}
+td{padding:12px;border-bottom:1px solid var(--border);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#fafbfd}
+tr.contatado td{opacity:.5}
+.nome{font-weight:600;font-size:13.5px}
+.nome-sub{font-size:11.5px;color:var(--muted);margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;border:1px solid;white-space:nowrap}
+.b-quente{background:var(--red-soft);color:var(--red);border-color:var(--red-border)}
+.b-morno{background:var(--amber-soft);color:var(--amber);border-color:var(--amber-border)}
+.b-frio{background:#f1f5f9;color:#475569;border-color:#e2e8f0}
+.b-green{background:var(--green-soft);color:var(--green);border-color:var(--green-border)}
+.b-amber{background:var(--amber-soft);color:var(--amber);border-color:var(--amber-border)}
+.b-gray{background:#f1f5f9;color:#475569;border-color:#e2e8f0}
+
+.nota{font-size:13px;font-weight:600;white-space:nowrap}
+.nota small{display:block;font-weight:400;color:var(--muted);font-size:11px}
+.end{font-size:12.5px;color:var(--muted);max-width:240px}
+.motivo{font-size:11px;color:var(--muted);margin-top:4px}
+.acoes{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ---------- states ---------- */
+.empty{text-align:center;padding:56px 20px}
+.empty-icon{width:52px;height:52px;border-radius:14px;background:var(--primary-soft);color:var(--primary);display:inline-grid;place-items:center;margin-bottom:14px}
+.empty h3{font-size:15px;margin-bottom:4px}
+.empty p{color:var(--muted);font-size:13px;max-width:380px;margin:0 auto}
+.error-banner{display:none;gap:10px;align-items:flex-start;background:var(--red-soft);border:1px solid var(--red-border);color:var(--red);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;font-size:13px}
+.error-banner.show{display:flex}
+.error-banner a{color:var(--red);text-decoration:underline}
+
+/* ---------- modal ---------- */
+.modal{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:20px}
+.modal[hidden]{display:none}
+.modal-back{position:absolute;inset:0;background:rgba(15,23,42,.45)}
+.modal-box{position:relative;background:var(--surface);border-radius:14px;box-shadow:0 20px 50px rgba(15,23,42,.25);width:min(560px,100%);max-height:88vh;overflow-y:auto;padding:22px 24px}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.modal-head h2{font-size:16px}
+.modal-hint{font-size:12.5px;color:var(--muted);margin-bottom:16px}
+.steps{font-size:12.5px;color:var(--muted);padding-left:18px;margin:10px 0}
+.steps li{margin-bottom:4px}
+.modal-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+details.help{margin-top:14px;border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+details.help summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--primary)}
+
+/* ---------- toasts ---------- */
+#toasts{position:fixed;right:18px;bottom:18px;z-index:60;display:flex;flex-direction:column;gap:8px}
+.toast{background:#0f172a;color:#fff;font-size:13px;font-weight:500;padding:11px 15px;border-radius:9px;box-shadow:0 8px 24px rgba(15,23,42,.3);animation:tin .2s ease;max-width:340px}
+.toast.ok{background:#064e3b}
+.toast.erro{background:#7f1d1d}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+footer{max-width:1180px;margin:0 auto;padding:0 20px 30px;font-size:11.5px;color:var(--muted)}
+footer a{color:var(--muted);text-decoration:underline}
+
+/* ---------- responsive ---------- */
+@media (max-width:960px){
+  .grid-busca{grid-template-columns:1fr}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .topbar-right .pill span{display:none}
+}
+@media (max-width:520px){
+  .kpis{grid-template-columns:1fr 1fr}
+  .wrap{padding:16px 12px 30px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <div class="brand-mark">P</div>
+      <div>
+        <div class="brand-name">Prospec</div>
+        <div class="brand-sub">Gerador de leads locais</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="pill" id="srcPill" title="Fonte de dados ativa"><span class="dot warn" id="srcDot"></span><span id="srcText">Fonte: OpenStreetMap (limitada)</span></span>
+      <button class="btn btn-sm" id="btnConfig" aria-label="Configurações">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        Configurar
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- erro -->
+  <div class="error-banner" id="errorBanner" role="alert"></div>
+
+  <!-- busca -->
+  <section class="card card-pad">
+    <div class="card-title">Nova busca de leads</div>
+    <div class="grid grid-busca">
+      <div class="field">
+        <label for="cidade">Cidade e UF</label>
+        <input class="input" id="cidade" placeholder="Ex.: Campinas, SP" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="bairros">Bairros — opcional, separe com vírgula (multiplica os resultados)</label>
+        <input class="input" id="bairros" placeholder="Ex.: Cambuí, Nova Campinas, Barão Geraldo" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="maxLeads">Máx. de leads</label>
+        <select class="input" id="maxLeads">
+          <option value="50">50</option>
+          <option value="100" selected>100</option>
+          <option value="200">200</option>
+          <option value="400">400</option>
+          <option value="800">800</option>
+        </select>
+      </div>
+      <div class="field" style="display:flex;gap:8px">
+        <button class="btn btn-primary" id="btnSearch">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Gerar leads
+        </button>
+        <button class="btn" id="btnStop" hidden>Parar</button>
+      </div>
+      <div class="field chips-row">
+        <label>Segmentos (pode marcar vários)</label>
+        <div class="chips" id="chips"></div>
+        <div class="custom-row">
+          <input class="input" id="customCat" placeholder="Outro segmento — Ex.: óticas, imóveis, padarias…">
+          <button class="btn" id="btnAddCustom">Adicionar</button>
+        </div>
+        <div class="memory-line">
+          <label class="toggle"><input type="checkbox" id="chkVistos" checked> Nunca repetir leads já vistos</label>
+          <span class="count" id="memLabel">memória vazia</span>
+          <button class="link-btn" id="btnClearMem">limpar memória</button>
+          <span class="count" style="flex-basis:100%">Dica: rode de novo trocando os bairros — o app filtra os leads que você já viu e só traz novidades.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap" hidden>
+      <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+      <div class="log" id="logBox" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- kpis -->
+  <section class="kpis" id="kpis" hidden>
+    <div class="kpi"><div class="kpi-label">Leads</div><div class="kpi-value" id="kpiTotal">0</div><div class="kpi-sub">nesta busca</div></div>
+    <div class="kpi"><div class="kpi-label">Quentes</div><div class="kpi-value" id="kpiHot">0</div><div class="kpi-sub">sem site / perfil fraco</div></div>
+    <div class="kpi"><div class="kpi-label">Com telefone</div><div class="kpi-value" id="kpiTel">0</div><div class="kpi-sub">dá pra chamar no zap</div></div>
+    <div class="kpi"><div class="kpi-label">Sem telefone</div><div class="kpi-value" id="kpiNoTel">0</div><div class="kpi-sub">só endereço/site</div></div>
+    <div class="kpi"><div class="kpi-label">Contatados</div><div class="kpi-value" id="kpiDone">0</div><div class="kpi-sub">marcados por você</div></div>
+  </section>
+
+  <!-- resultados -->
+  <section class="card" id="resultsCard" hidden>
+    <div class="card-pad" style="padding-bottom:0">
+      <div class="toolbar">
+        <div class="search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="input" id="filtroTexto" placeholder="Filtrar por nome ou endereço…">
+        </div>
+        <select class="input" id="filtroTier" style="width:auto;height:40px">
+          <option value="">Todas as classificações</option>
+          <option value="QUENTE">Só quentes</option>
+          <option value="MORNO">Só mornos</option>
+          <option value="FRIO">Só frios</option>
+        </select>
+        <label class="toggle"><input type="checkbox" id="filtroTel"> Só com telefone</label>
+        <label class="toggle"><input type="checkbox" id="filtroOcultar"> Ocultar contatados</label>
+        <span class="spacer"></span>
+        <span class="count" id="countLabel"></span>
+        <button class="btn btn-sm" id="btnCsv">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          CSV
+        </button>
+        <button class="btn btn-sm btn-primary" id="btnXlsx">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Planilha XLSX
+        </button>
+        <button class="btn btn-sm" id="btnClear">Limpar</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:34px" title="Marcar como contatado">✓</th>
+            <th>Lead</th>
+            <th style="width:110px">Nota</th>
+            <th style="width:170px">Site</th>
+            <th style="width:210px">Contato</th>
+            <th>Endereço</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="emptyFilter" hidden>
+      <p>Nenhum lead corresponde aos filtros.</p>
+    </div>
+  </section>
+
+  <!-- estado vazio -->
+  <section class="card empty" id="emptyState">
+    <div class="empty-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </div>
+    <h3>Nenhum lead ainda</h3>
+    <p>Escolha a cidade, os <b>bairros</b> e os segmentos acima e clique em <b>Gerar leads</b>. O app busca estabelecimentos no Google Maps, mostra quem <b>não tem site</b> (seus leads mais quentes) e gera o link do WhatsApp com mensagem pronta.<br>Para ter leads <b>sempre novos</b>: rode de novo trocando os bairros ou os segmentos — a memória automaticamente pula quem você já viu.</p>
+  </section>
+
+</main>
+
+<footer>
+  Fontes de dados: <b>Google Places API</b> (quando configurada — dados completos: telefone, site, nota) e <b>OpenStreetMap</b> (gratuito, cobertura parcial no Brasil). Use com ética: identifique-se nas abordagens e respeite a recusa do contato (LGPD). Esta página não faz scraping do Google Maps — usa apenas APIs oficiais, dentro dos termos de uso.
+</footer>
+
+<!-- modal config -->
+<div class="modal" id="modalConfig" hidden role="dialog" aria-modal="true" aria-labelledby="cfgTitle">
+  <div class="modal-back" data-close></div>
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2 id="cfgTitle">Configuração</h2>
+      <button class="btn-icon" data-close aria-label="Fechar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <p class="modal-hint">Sem chave, o app funciona com o OpenStreetMap (dados limitados). Com a chave do Google, você passa a receber telefone, site e nota de <b>todas</b> as empresas — 5.000 buscas grátis por mês.</p>
+
+    <div class="field" style="margin-bottom:14px">
+      <label for="apiKey">Chave da API do Google Places</label>
+      <input class="input" id="apiKey" placeholder="AIza…" style="font-family:var(--mono);font-size:12.5px" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label for="msgTpl">Mensagem do WhatsApp (personalizável)</label>
+      <textarea class="input" id="msgTpl"></textarea>
+      <p class="modal-hint" style="margin:6px 0 0">Use <code>{nome}</code> para o nome do negócio e <code>{cidade}</code> para a cidade.</p>
+    </div>
+
+    <details class="help">
+      <summary>Como criar a chave do Google (leva ~10 minutos, é grátis)</summary>
+      <ol class="steps">
+        <li>Abra <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">console.cloud.google.com</a> e crie um projeto (ex.: "prospec").</li>
+        <li>Na busca do console, digite <b>Places API (New)</b> e clique em <b>Ativar</b>.</li>
+        <li>No menu <b>Credenciais → Criar credencial → Chave de API</b>. Copie a chave.</li>
+        <li>O Google pede uma <b>conta de faturamento</b> mesmo para o plano grátis — dentro de 5.000 buscas/mês você <b>não paga nada</b>. Recomendado: crie um alerta de orçamento de R$ 0 para ser avisado se algo sair do controle.</li>
+        <li>Cole a chave acima e salve. Pronto — a fonte do app vira "Google Places".</li>
+      </ol>
+    </details>
+
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="btnSaveCfg">Salvar</button>
+      <button class="btn" id="btnClearKey">Remover chave</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+<script>
+'use strict';
+/* =====================================================================
+   Prospec — gerador de leads locais que roda 100% no navegador.
+   Fonte 1: Google Places API (New) Text Search — oficial, 5k grátis/mês.
+   Fonte 2: OpenStreetMap Overpass — gratuita, sem cadastro (fallback).
+   ===================================================================== */
+
+/* ---------------- utilidades DOM ---------------- */
+function h(tag, attrs){
+  const n = document.createElement(tag);
+  attrs = attrs || {};
+  for (const k in attrs){
+    const v = attrs[k];
+    if (v === false || v === null || v === undefined) continue;
+    if (k === 'class') n.className = v;
+    else if (k === 'text') n.textContent = v;
+    else if (k === 'html') n.innerHTML = v;
+    else if (k.slice(0,2) === 'on') n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v === true ? '' : v);
+  }
+  for (let i = 2; i < arguments.length; i++){
+    const kid = arguments[i];
+    if (kid === null || kid === undefined || kid === false) continue;
+    if (Array.isArray(kid)) { kid.forEach(function(k2){ if (k2) n.append(k2); }); }
+    else if (kid.nodeType) n.append(kid);
+    else n.append(document.createTextNode(String(kid)));
+  }
+  return n;
+}
+const $ = function(id){ return document.getElementById(id); };
+const NS = 'http://www.w3.org/2000/svg';
+const ICONS = {
+  check:'<polyline points="20 6 9 17 4 12"/>',
+  copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+  ext:'<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>',
+  chat:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>',
+  phone:'<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>'
+};
+function icon(name, size){
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', size || 14);
+  svg.setAttribute('height', size || 14);
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '2');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.innerHTML = ICONS[name] || '';
+  return svg;
+}
+const sleep = function(ms){ return new Promise(function(r){ setTimeout(r, ms); }); };
+
+/* ---------------- persistência ---------------- */
+const LS = {
+  get: function(k, def){ try { const v = localStorage.getItem('prospec1.' + k); return v === null ? def : JSON.parse(v); } catch(e){ return def; } },
+  set: function(k, v){ try { localStorage.setItem('prospec1.' + k, JSON.stringify(v)); } catch(e){ /* cota cheia */ } },
+  del: function(k){ try { localStorage.removeItem('prospec1.' + k); } catch(e){} }
+};
+
+const MSG_PADRAO = 'Olá, {nome}! Tudo bem? Vi vocês no Google e curti o trabalho de vocês. ' +
+  'Trabalho com criação de sites e aplicativos para negócios locais e tenho uma ideia rápida de como o ' +
+  '{nome} poderia ter um site próprio (com agendamento ou pedidos online). Posso te mostrar um exemplo? 😊';
+
+/* ---------------- segmentos ---------------- */
+const NICHOS = [
+  { id:'restaurantes', label:'Restaurantes e bares', queries:['restaurante em {r}','pizzaria em {r}','hamburgueria em {r}','churrascaria em {r}','restaurante japones em {r}'], osm:'["amenity"="restaurant"]' },
+  { id:'saude', label:'Clínicas e odonto', queries:['clínica em {r}','dentista em {r}','clínica odontológica em {r}','clínica médica em {r}','psicólogo em {r}'], osm:'["healthcare"]', bonus:8 },
+  { id:'beleza', label:'Salões e estética', queries:['salão de beleza em {r}','barbearia em {r}','estética em {r}','studio de unhas em {r}'], osm:'["shop"~"^(hairdresser|beauty|nails)$"]' },
+  { id:'juridico', label:'Advogados e contadores', queries:['escritório de advocacia em {r}','advogado em {r}','escritório contábil em {r}','contador público em {r}'], osm:'["office"~"^(lawyer|accountant)$"]', bonus:8 },
+  { id:'comercio', label:'Comércio em geral', queries:['loja em {r}','loja de roupas em {r}','distribuidora em {r}','material de construcao em {r}'], osm:'["shop"]' },
+  { id:'academias', label:'Academias e pilates', queries:['academia em {r}','crossfit em {r}','pilates em {r}'], osm:'["leisure"="fitness_centre"]' },
+  { id:'pet', label:'Pet shops e veterinárias', queries:['pet shop em {r}','veterinária em {r}'], osm:'["shop"="pet"]' },
+  { id:'imob', label:'Imobiliárias', queries:['imobiliária em {r}'], osm:'["office"="estate_agent"]' },
+  { id:'oficina', label:'Oficinas e auto center', queries:['oficina mecânica em {r}','auto center em {r}','funilaria em {r}'], osm:'["shop"~"^(car_repair|car_parts)$"]' },
+  { id:'hospedagem', label:'Hotéis e pousadas', queries:['hotel em {r}','pousada em {r}','hostel em {r}'], osm:'["tourism"~"^(hotel|guest_house|hostel)$"]' }
+];
+
+/* ---------------- estado ---------------- */
+const state = {
+  leads: [],            // todos os leads da sessão (com filtro aplicado fica em view)
+  view: [],             // leads visíveis após filtros
+  sel: new Set(),       // ids de nichos marcados
+  custom: [],           // categorias digitadas
+  buscando: false,
+  parar: false,
+  authFalhou: false
+};
+
+/* memória de leads já vistos — é o que torna as buscas "infinitas":
+   cada nova varredura pula o que já apareceu e só traz negócios novos. */
+const seen = new Set(LS.get('seen', []));
+function salvarSeen(){ LS.set('seen', Array.from(seen).slice(-6000)); }
+function marcarVistos(ids){ ids.forEach(function(id){ seen.add(id); }); salvarSeen(); }
+function atualizarMem(){
+  $('memLabel').textContent = seen.size
+    ? 'memória: ' + seen.size.toLocaleString('pt-BR') + ' leads já vistos'
+    : 'memória vazia';
+}
+
+/* ---------------- helpers de dados ---------------- */
+function waNumber(tel){
+  let d = String(tel || '').replace(/\D/g, '');
+  if (!d) return '';
+  if (d.slice(0,2) === '55' && d.length >= 12) return d;
+  if (d.length <= 11) return '55' + d;
+  return d;
+}
+function isFixo(tel){
+  let d = String(tel || '').replace(/\D/g, '');
+  if (d.slice(0,2) === '55' && d.length > 11) d = d.slice(2);
+  return d.length === 10; // DDD + 8 dígitos = fixo
+}
+function msgPara(lead){
+  const tpl = LS.get('msg', MSG_PADRAO);
+  return tpl.split('{nome}').join(lead.nome).split('{cidade}').join(lead.cidade || '');
+}
+function waLink(lead){
+  const n = waNumber(lead.tel);
+  return n ? 'https://wa.me/' + n + '?text=' + encodeURIComponent(msgPara(lead)) : '';
+}
+function siteTipo(lead){
+  const s = (lead.site || '').toLowerCase();
+  if (!s) return { label:'Sem site', cls:'b-red', tipo:'nenhum' };
+  if (/instagram\.com|facebook\.com|linktr\.ee|wa\.me|whatsapp\.com|tiktok\.com|youtube\.com/.test(s))
+    return { label:'Só rede social', cls:'b-amber', tipo:'social' };
+  if (/business\.site|googleusercontent|wixsite|godaddysites|weebly|netlify\.app|wordpress\.com|locaweb|hotmart/.test(s))
+    return { label:'Site gratuito', cls:'b-amber', tipo:'gratis' };
+  if (s.slice(0,8) !== 'https://') return { label:'Site sem HTTPS', cls:'b-amber', tipo:'antigo' };
+  return { label:'Tem site', cls:'b-green', tipo:'proprio' };
+}
+function pontuar(lead){
+  let score = 0;
+  const motivos = [];
+  const st = siteTipo(lead);
+  if (lead.tel) { score += 10; } else { motivos.push('sem telefone'); }
+  if (st.tipo === 'nenhum') { score += 55; motivos.push('sem site — quer site novo'); }
+  else if (st.tipo === 'social') { score += 45; motivos.push('site é só rede social'); }
+  else if (st.tipo === 'gratis') { score += 40; motivos.push('site gratuito/genérico'); }
+  else if (st.tipo === 'antigo') { score += 32; motivos.push('site sem HTTPS'); }
+  else { score += 16; motivos.push('tem site — vender app/sistema'); }
+  if (lead.nota && lead.avaliacoes >= 10) { score += Math.min(15, Math.round(lead.nota * 3)); motivos.push('bem avaliado'); }
+  if (lead.bonus) score += lead.bonus;
+  if (lead.status === 'TEMPORARILY_CLOSED') { score -= 20; motivos.push('fechado temporariamente'); }
+  lead.score = Math.max(0, Math.min(100, score));
+  lead.tier = lead.score >= 75 ? 'QUENTE' : (lead.score >= 50 ? 'MORNO' : 'FRIO');
+  lead.motivo = motivos.join(' · ');
+}
+
+/* ---------------- Google Places (New) ---------------- */
+const FIELD_MASK = [
+  'places.id','places.displayName','places.formattedAddress',
+  'places.nationalPhoneNumber','places.internationalPhoneNumber',
+  'places.websiteUri','places.rating','places.userRatingCount',
+  'places.googleMapsUri','places.businessStatus','places.types',
+  'nextPageToken'
+].join(',');
+
+async function googlePage(textQuery, apiKey, pageToken){
+  const body = { textQuery: textQuery, pageSize: 20, languageCode: 'pt-BR', regionCode: 'BR' };
+  if (pageToken) body.pageToken = pageToken;
+  const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': apiKey, 'X-Goog-FieldMask': FIELD_MASK },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok){
+    let msg = '';
+    try { msg = (await res.json()).error?.message || ''; } catch(e){}
+    const err = new Error(msg || ('HTTP ' + res.status));
+    err.status = res.status;
+    throw err;
+  }
+  return res.json();
+}
+
+function leadDoGoogle(p, cidade, bonus){
+  return {
+    id: p.id,
+    nome: (p.displayName && p.displayName.text) || '(sem nome)',
+    categoria: (p.types && p.types[0]) || '',
+    endereco: p.formattedAddress || '',
+    tel: p.nationalPhoneNumber || p.internationalPhoneNumber || '',
+    site: p.websiteUri || '',
+    nota: typeof p.rating === 'number' ? p.rating : null,
+    avaliacoes: p.userRatingCount || 0,
+    maps: p.googleMapsUri || '',
+    status: p.businessStatus || 'OPERATIONAL',
+    fonte: 'Google',
+    cidade: cidade,
+    bonus: bonus || 0
+  };
+}
+
+/* ---------------- OpenStreetMap (fallback) ---------------- */
+async function osmBusca(query, cidade){
+  const nomeCidade = cidade.split(',')[0].trim().replace(/"/g, '');
+  const q = '[out:json][timeout:60];area["name"="' + nomeCidade + '"]["boundary"="administrative"]->.a;(' +
+            'nwr' + query + '(area.a););out center 200;';
+  const res = await fetch('https://overpass-api.de/api/interpreter', {
+    method: 'POST',
+    body: 'data=' + encodeURIComponent(q)
+  });
+  if (!res.ok) throw new Error('OpenStreetMap respondeu HTTP ' + res.status);
+  const json = await res.json();
+  return (json.elements || []).map(function(el){
+    const t = el.tags || {};
+    if (!t.name) return null;
+    const lat = typeof el.lat === 'number' ? el.lat : (el.center ? el.center.lat : null);
+    const lon = typeof el.lon === 'number' ? el.lon : (el.center ? el.center.lon : null);
+    return {
+      id: 'osm-' + el.type + '-' + el.id,
+      nome: t.name,
+      categoria: t.amenity || t.shop || t.office || t.tourism || t.healthcare || '',
+      endereco: [t['addr:street'], t['addr:housenumber'], t['addr:neighborhood'], t['addr:city']].filter(Boolean).join(', '),
+      tel: t['contact:phone'] || t.phone || t['contact:mobile'] || t.mobile || '',
+      site: t.website || t['contact:website'] || '',
+      nota: null,
+      avaliacoes: 0,
+      maps: (lat !== null) ? ('https://www.google.com/maps/search/?api=1&query=' + lat + ',' + lon) : '',
+      status: 'OPERATIONAL',
+      fonte: 'OSM',
+      cidade: cidade
+    };
+  }).filter(Boolean);
+}
+
+/* ---------------- log / UI feedback ---------------- */
+function log(txt, isErr){
+  const box = $('logBox');
+  const line = h('div', { class: isErr ? 'err' : '' }, txt);
+  box.append(line);
+  box.scrollTop = box.scrollHeight;
+  while (box.children.length > 40) box.removeChild(box.firstChild);
+}
+function toast(msg, tipo){
+  const t = h('div', { class: 'toast ' + (tipo || '') }, msg);
+  $('toasts').append(t);
+  setTimeout(function(){ t.remove(); }, 3400);
+}
+function mostrarErro(msg){
+  const b = $('errorBanner');
+  b.innerHTML = '';
+  b.append(h('span', { text: msg }));
+  b.classList.add('show');
+}
+function limparErro(){ $('errorBanner').classList.remove('show'); }
+
+/* ---------------- busca principal ---------------- */
+function lerBairros(){
+  return ($('bairros').value || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+}
+function montarJobs(regiao){
+  // bairros só fazem sentido com o Google (no OSM a busca é por cidade inteira)
+  const bairros = (LS.get('key', '')) ? lerBairros() : [];
+  const jobs = [];
+  NICHOS.forEach(function(n){
+    if (!state.sel.has(n.id)) return;
+    n.queries.forEach(function(q){
+      const base = q.split(' em ')[0]; // "restaurante", "clínica odontológica"…
+      if (bairros.length){
+        bairros.forEach(function(b){
+          jobs.push({ texto: base + ' no bairro ' + b + ', ' + regiao, osm: n.osm, bonus: n.bonus || 0, nicho: n.label });
+        });
+      } else {
+        jobs.push({ texto: q.split('{r}').join(regiao), osm: n.osm, bonus: n.bonus || 0, nicho: n.label });
+      }
+    });
+  });
+  state.custom.forEach(function(c){
+    if (bairros.length){
+      bairros.forEach(function(b){
+        jobs.push({ texto: c + ' no bairro ' + b + ', ' + regiao, osm: '["name"]', bonus: 0, nicho: c, custom: true });
+      });
+    } else {
+      jobs.push({ texto: c + ' em ' + regiao, osm: '["name"]', bonus: 0, nicho: c, custom: true });
+    }
+  });
+  return jobs;
+}
+
+async function buscar(){
+  const regiao = $('cidade').value.trim();
+  if (!regiao) { toast('Informe a cidade e a UF.', 'erro'); $('cidade').focus(); return; }
+  const jobs = montarJobs(regiao);
+  if (!jobs.length) { toast('Marque ao menos um segmento.', 'erro'); return; }
+
+  const apiKey = LS.get('key', '');
+  const max = parseInt($('maxLeads').value, 10);
+  const ocultarVistos = $('chkVistos').checked;
+  const bairros = apiKey ? lerBairros() : [];
+  state.buscando = true; state.parar = false; state.authFalhou = false;
+  $('btnSearch').disabled = true; $('btnSearch').hidden = true;
+  $('btnStop').hidden = false;
+  $('progressWrap').hidden = false;
+  $('logBox').innerHTML = '';
+  limparErro();
+
+  const fonte = apiKey ? 'Google Places' : 'OpenStreetMap (sem chave — dados limitados)';
+  log('Fonte: ' + fonte + ' · Alvo: ' + regiao + ' · Meta: ' + max + ' leads', true);
+  if (bairros.length) log('Varredura por bairro: ' + bairros.join(', '));
+  if (ocultarVistos && seen.size) log('Pulando ' + seen.size.toLocaleString('pt-BR') + ' leads já vistos…');
+
+  const vistos = new Map(state.leads.map(function(l){ return [l.id, l]; }));
+  const novosIds = [];
+  let novos = 0, chamadas = 0;
+  const totalEst = Math.max(1, Math.round(jobs.length * 1.3));
+
+  try {
+    for (let ji = 0; ji < jobs.length; ji++){
+      if (state.parar || vistos.size >= max || state.authFalhou) break;
+      const job = jobs[ji];
+      log('[' + (ji+1) + '/' + jobs.length + '] ' + job.texto);
+
+      try {
+        if (apiKey) {
+          let token = null, pagina = 0;
+          do {
+            if (state.parar || vistos.size >= max) break;
+            const data = await googlePage(job.texto, apiKey, token);
+            chamadas++;
+            (data.places || []).forEach(function(p){
+              if (p.businessStatus === 'CLOSED_PERMANENTLY') return;
+              if (vistos.has(p.id)) return;
+              if (ocultarVistos && seen.has(p.id)) return;
+              const lead = leadDoGoogle(p, regiao, job.bonus);
+              lead.nicho = job.nicho;
+              vistos.set(lead.id, lead); novosIds.push(lead.id); novos++;
+            });
+            token = data.nextPageToken || null;
+            pagina++;
+          } while (token && pagina < 3);
+        } else {
+          const elems = await osmBusca(job.osm, regiao);
+          chamadas++;
+          elems.forEach(function(l){
+            if (vistos.has(l.id)) return;
+            if (ocultarVistos && seen.has(l.id)) return;
+            l.nicho = job.custom ? job.nicho : null;
+            vistos.set(l.id, l); novosIds.push(l.id); novos++;
+          });
+        }
+      } catch (err){
+        if (apiKey && (err.status === 403 || /API key|PERMISSION_DENIED|REQUEST_DENIED|denied/i.test(err.message || ''))){
+          state.authFalhou = true;
+          mostrarErro('A chave da API foi recusada. Confira se você ativou a "Places API (New)" no console do Google e se a chave está correta. Abra Configurar para ajustar.');
+          log('ERRO de autenticação — busca interrompida.', true);
+          break;
+        }
+        log('Falha em "' + job.texto + '": ' + (err.message || err), true);
+      }
+
+      $('barFill').style.width = Math.min(99, Math.round(chamadas / totalEst * 90)) + '%';
+      await sleep(apiKey ? 260 : 600); // respeita limite de requisições
+    }
+  } finally {
+    if (ocultarVistos && novosIds.length) marcarVistos(novosIds);
+    atualizarMem();
+    state.leads = Array.from(vistos.values());
+    state.leads.forEach(pontuar);
+    state.leads.sort(function(a,b){ return b.score - a.score || b.avaliacoes - a.avaliacoes; });
+    salvarLeads();
+    state.buscando = false;
+    $('btnSearch').hidden = false; $('btnSearch').disabled = false;
+    $('btnStop').hidden = true;
+    $('barFill').style.width = '100%';
+    log('Concluído: ' + novos + ' leads novos · ' + chamadas + ' chamadas à API' + (apiKey ? ' (do seu limite grátis de 5.000/mês)' : ''), true);
+    render();
+    if (novos === 0 && !state.authFalhou) toast('Nada novo desta vez — troque os bairros ou os segmentos e rode de novo.', 'erro');
+    else if (novos > 0) toast('Pronto! ' + novos + ' leads novos encontrados ✓', 'ok');
+  }
+}
+
+/* ---------------- persistência de leads ---------------- */
+function salvarLeads(){
+  LS.set('leads', state.leads.slice(0, 600));
+  LS.set('cidade', $('cidade').value);
+  LS.set('bairros', $('bairros').value);
+  LS.set('sel', Array.from(state.sel));
+  LS.set('custom', state.custom);
+}
+function contatados(){ return LS.get('contatados', {}); }
+function marcarContatado(id, on){
+  const c = contatados();
+  if (on) c[id] = 1; else delete c[id];
+  LS.set('contatados', c);
+}
+
+/* ---------------- render ---------------- */
+function aplicarFiltros(){
+  const texto = $('filtroTexto').value.trim().toLowerCase();
+  const tier = $('filtroTier').value;
+  const soTel = $('filtroTel').checked;
+  const ocultar = $('filtroOcultar').checked;
+  const c = contatados();
+  state.view = state.leads.filter(function(l){
+    if (texto && (l.nome + ' ' + l.endereco).toLowerCase().indexOf(texto) === -1) return false;
+    if (tier && l.tier !== tier) return false;
+    if (soTel && !l.tel) return false;
+    if (ocultar && c[l.id]) return false;
+    return true;
+  });
+}
+
+function badgeTier(tier){
+  const cls = tier === 'QUENTE' ? 'b-quente' : (tier === 'MORNO' ? 'b-morno' : 'b-frio');
+  return h('span', { class: 'badge ' + cls, title: 'Classificação automática baseada em site, telefone e avaliações' }, tier);
+}
+
+function linhaLead(lead){
+  const c = contatados();
+  const contatado = !!c[lead.id];
+  const st = siteTipo(lead);
+
+  // checkbox contatado
+  const chk = h('input', { type: 'checkbox', title: 'Marcar como contatado',
+    onchange: function(e){ marcarContatado(lead.id, e.target.checked); render(); } });
+  chk.checked = contatado;
+
+  // nome + sublinha
+  const sub = h('div', { class: 'nome-sub' }, badgeTier(lead.tier), h('span', { text: lead.nicho || lead.categoria || '' }));
+  const nomeCell = h('td', {}, h('div', { class: 'nome' }, lead.nome), sub,
+                     lead.motivo ? h('div', { class: 'motivo', text: lead.motivo }) : null);
+
+  // nota
+  const notaCell = h('td', {},
+    lead.nota ? h('div', { class: 'nota' }, '★ ' + lead.nota.toFixed(1), h('small', { text: lead.avaliacoes + ' avaliações' }))
+              : h('span', { class: 'nota', text: '—' }));
+
+  // site
+  const siteCell = h('td', {}, h('span', { class: 'badge ' + st.cls }, st.label));
+  if (lead.site) siteCell.append(h('div', { style: 'margin-top:6px' },
+    h('a', { href: lead.site, target: '_blank', rel: 'noopener', text: lead.site.replace(/^https?:\/\//, '').slice(0, 28) + (lead.site.length > 35 ? '…' : '') })));
+
+  // contato
+  const acoes = h('div', { class: 'acoes' });
+  const wa = waLink(lead);
+  if (wa){
+    acoes.append(h('a', { class: 'btn btn-sm btn-green', href: wa, target: '_blank', rel: 'noopener' },
+      icon('chat'), isFixo(lead.tel) ? 'WhatsApp (fixo)' : 'WhatsApp'));
+    acoes.append(h('button', { class: 'btn-icon', title: 'Copiar mensagem personalizada',
+      onclick: function(){ copyText(msgPara(lead)); } }, icon('copy')));
+  } else if (lead.tel){
+    acoes.append(h('a', { class: 'btn btn-sm', href: 'tel:' + lead.tel, title: 'Ligar' }, icon('phone'), 'Ligar'));
+  } else {
+    acoes.append(h('span', { class: 'badge b-gray', text: 'Sem telefone' }));
+  }
+  const contatoCell = h('td', {}, acoes, lead.tel ? h('div', { class: 'motivo', text: lead.tel }) : null);
+
+  // endereço
+  const endCell = h('td', {},
+    h('div', { class: 'end', text: lead.endereco || '—' }),
+    lead.maps ? h('a', { href: lead.maps, target: '_blank', rel: 'noopener', text: 'Ver no Maps ↗', style: 'font-size:12px' }) : null);
+
+  const tr = h('tr', contatado ? { class: 'contatado' } : {},
+    h('td', {}, chk), nomeCell, notaCell, siteCell, contatoCell, endCell);
+  return tr;
+}
+
+function render(){
+  aplicarFiltros();
+  const temLeads = state.leads.length > 0;
+  $('emptyState').hidden = temLeads;
+  $('resultsCard').hidden = !temLeads;
+  $('kpis').hidden = !temLeads;
+  if (!temLeads) return;
+
+  // KPIs
+  const c = contatados();
+  const contatadosQtd = state.leads.filter(function(l){ return c[l.id]; }).length;
+  $('kpiTotal').textContent = state.leads.length;
+  $('kpiHot').textContent = state.leads.filter(function(l){ return l.tier === 'QUENTE'; }).length;
+  $('kpiTel').textContent = state.leads.filter(function(l){ return !!l.tel; }).length;
+  $('kpiNoTel').textContent = state.leads.filter(function(l){ return !l.tel; }).length;
+  $('kpiDone').textContent = contatadosQtd;
+
+  // tabela
+  const tbody = $('tbody');
+  tbody.innerHTML = '';
+  state.view.forEach(function(l){ tbody.append(linhaLead(l)); });
+  $('emptyFilter').hidden = state.view.length > 0;
+  $('countLabel').textContent = state.view.length + ' de ' + state.leads.length + ' leads';
+}
+
+/* ---------------- exportação ---------------- */
+const COLUNAS = ['Nome','Segmento','Classificação','Pontuação','Motivo','Nota Google','Avaliações','Tem site','Site','Telefone','Link WhatsApp','Endereço','Link Maps','Fonte','Contatado'];
+function linhasExport(){
+  const c = contatados();
+  return state.view.map(function(l){
+    return {
+      'Nome': l.nome,
+      'Segmento': l.nicho || l.categoria || '',
+      'Classificação': l.tier,
+      'Pontuação': l.score,
+      'Motivo': l.motivo,
+      'Nota Google': l.nota !== null ? l.nota : '',
+      'Avaliações': l.avaliacoes,
+      'Tem site': siteTipo(l).label,
+      'Site': l.site,
+      'Telefone': l.tel,
+      'Link WhatsApp': waLink(l),
+      'Endereço': l.endereco,
+      'Link Maps': l.maps,
+      'Fonte': l.fonte,
+      'Contatado': c[l.id] ? 'sim' : ''
+    };
+  });
+}
+function slug(s){ return String(s || 'leads').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
+function nomeArquivo(ext){
+  return 'leads-' + slug($('cidade').value) + '-' + new Date().toISOString().slice(0,10) + '.' + ext;
+}
+function baixarBlob(conteudo, nome, mime){
+  const blob = new Blob([conteudo], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = h('a', { href: url, download: nome });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+}
+function exportarCsv(){
+  if (!state.view.length) return toast('Nenhum lead para exportar.', 'erro');
+  const rows = linhasExport();
+  const esc = function(v){ return '"' + String(v === null || v === undefined ? '' : v).replace(/"/g, '""') + '"'; };
+  const csv = '\uFEFF' + COLUNAS.map(esc).join(';') + '\n' +
+              rows.map(function(r){ return COLUNAS.map(function(c2){ return esc(r[c2]); }).join(';'); }).join('\n');
+  baixarBlob(csv, nomeArquivo('csv'), 'text/csv;charset=utf-8');
+  toast('CSV baixado ✓', 'ok');
+}
+function exportarXlsx(){
+  if (!state.view.length) return toast('Nenhum lead para exportar.', 'erro');
+  if (typeof XLSX === 'undefined'){
+    toast('Planilha offline — exportando CSV no lugar.', 'erro');
+    return exportarCsv();
+  }
+  const ws = XLSX.utils.json_to_sheet(linhasExport(), { header: COLUNAS });
+  ws['!cols'] = COLUNAS.map(function(c2){ return { wch: Math.max(12, Math.min(40, c2.length + 8)) }; });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Leads');
+  XLSX.writeFile(wb, nomeArquivo('xlsx'));
+  toast('Planilha XLSX baixada ✓', 'ok');
+}
+
+/* ---------------- clipboard ---------------- */
+async function copyText(txt){
+  try {
+    await navigator.clipboard.writeText(txt);
+    toast('Mensagem copiada ✓', 'ok');
+    return;
+  } catch(e){}
+  const ta = h('textarea', { style: 'position:fixed;opacity:0' });
+  ta.value = txt;
+  document.body.append(ta); ta.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch(e){}
+  ta.remove();
+  toast(ok ? 'Mensagem copiada ✓' : 'Não foi possível copiar — selecione manualmente.', ok ? 'ok' : 'erro');
+}
+
+/* ---------------- chips de segmento ---------------- */
+function montarChips(){
+  const box = $('chips');
+  box.innerHTML = '';
+  NICHOS.forEach(function(n){
+    const on = state.sel.has(n.id);
+    const btn = h('button', { class: 'chip', type: 'button', 'aria-pressed': on ? 'true' : 'false' }, icon('check', 13), n.label);
+    btn.addEventListener('click', function(){
+      if (state.sel.has(n.id)) state.sel.delete(n.id); else state.sel.add(n.id);
+      btn.setAttribute('aria-pressed', state.sel.has(n.id) ? 'true' : 'false');
+      salvarLeads();
+    });
+    box.append(btn);
+  });
+  state.custom.forEach(function(c, i){
+    const btn = h('button', { class: 'chip', type: 'button', 'aria-pressed': 'true', title: 'Remover' }, icon('check', 13), c);
+    btn.addEventListener('click', function(){ state.custom.splice(i, 1); montarChips(); salvarLeads(); });
+    box.append(btn);
+  });
+}
+
+/* ---------------- modal ---------------- */
+function abrirConfig(){
+  $('apiKey').value = LS.get('key', '');
+  $('msgTpl').value = LS.get('msg', MSG_PADRAO);
+  $('modalConfig').hidden = false;
+  $('apiKey').focus();
+}
+function fecharConfig(){ $('modalConfig').hidden = true; }
+
+/* ---------------- status da fonte ---------------- */
+function atualizarSrc(){
+  const temKey = !!LS.get('key', '');
+  $('srcDot').className = 'dot ' + (temKey ? 'ok' : 'warn');
+  $('srcText').textContent = temKey ? 'Fonte: Google Places' : 'Fonte: OpenStreetMap (limitada)';
+}
+
+/* ---------------- eventos ---------------- */
+$('btnSearch').addEventListener('click', buscar);
+$('btnStop').addEventListener('click', function(){ state.parar = true; });
+$('btnConfig').addEventListener('click', abrirConfig);
+document.querySelectorAll('[data-close]').forEach(function(el){ el.addEventListener('click', fecharConfig); });
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !$('modalConfig').hidden) fecharConfig(); });
+$('btnSaveCfg').addEventListener('click', function(){
+  LS.set('key', $('apiKey').value.trim());
+  LS.set('msg', $('msgTpl').value.trim() || MSG_PADRAO);
+  atualizarSrc(); fecharConfig();
+  toast(LS.get('key') ? 'Configuração salva ✓' : 'Mensagem salva ✓', 'ok');
+});
+$('btnClearKey').addEventListener('click', function(){
+  LS.del('key'); $('apiKey').value = '';
+  atualizarSrc(); toast('Chave removida.', 'ok');
+});
+$('btnAddCustom').addEventListener('click', function(){
+  const v = $('customCat').value.trim();
+  if (!v) return;
+  if (state.custom.indexOf(v) === -1) state.custom.push(v);
+  $('customCat').value = '';
+  montarChips(); salvarLeads();
+});
+$('customCat').addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); $('btnAddCustom').click(); } });
+$('chkVistos').addEventListener('change', function(e){ LS.set('vistosPref', e.target.checked); });
+$('bairros').addEventListener('input', salvarLeads);
+$('btnClearMem').addEventListener('click', function(){
+  if (!seen.size) return toast('A memória já está vazia.', 'erro');
+  if (!window.confirm('Apagar a memória de ' + seen.size.toLocaleString('pt-BR') + ' leads já vistos? A próxima busca poderá trazer leads repetidos.')) return;
+  seen.clear(); salvarSeen(); atualizarMem();
+  toast('Memória limpa.', 'ok');
+});
+['filtroTexto','filtroTier','filtroTel','filtroOcultar'].forEach(function(id){
+  $(id).addEventListener('input', render);
+  $(id).addEventListener('change', render);
+});
+$('btnCsv').addEventListener('click', exportarCsv);
+$('btnXlsx').addEventListener('click', exportarXlsx);
+$('btnClear').addEventListener('click', function(){
+  if (!state.leads.length) return;
+  state.leads = []; state.view = [];
+  LS.del('leads'); render();
+  toast('Resultados limpos.', 'ok');
+});
+
+/* ---------------- boot ---------------- */
+(function init(){
+  state.leads = LS.get('leads', []);
+  state.leads.forEach(pontuar);
+  $('cidade').value = LS.get('cidade', '');
+  $('bairros').value = LS.get('bairros', '');
+  $('chkVistos').checked = LS.get('vistosPref', true) !== false;
+  const selSalvo = LS.get('sel', []);
+  state.sel = new Set(Array.isArray(selSalvo) ? selSalvo : []);
+  state.custom = LS.get('custom', []);
+  montarChips();
+  atualizarSrc();
+  atualizarMem();
+  render();
+})();
+</script>
+</body>
+</html>
